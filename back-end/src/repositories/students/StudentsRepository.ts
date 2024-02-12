@@ -30,9 +30,27 @@ class StudentsRepository implements IStudentsRepository {
     return data.rows[0].count;
   }
 
+  public async getStudent(ra: string): Promise<Student> {
+    const data = await this.connection.query(
+      "SELECT * FROM SM.STUDENTS WHERE RA = $1 LIMIT 1",
+      [ra]
+    );
+
+    return data.rows[0] as Student;
+  }
+
   public async deleteStudent(ra: string): Promise<void> { }
 
-  public async createStudent(student: Student): Promise<void> { }
+  public async createStudent(student: Student): Promise<Student> {
+    const { ra, name, email, doc } = student;
+
+    const data = await this.connection.query(
+      "INSERT INTO SM.STUDENTS(RA, NAME, EMAIL, DOC) VALUES($1, $2, $3, $4) RETURNING *",
+      [ra, name, email, doc]
+    );
+
+    return data.rows[0] as Student;
+  }
 }
 
 export { StudentsRepository }

@@ -5,8 +5,11 @@ import { IStudentsRepository } from "../interfaces/IStudentsRepository";
 class StudentsRepositoryMock implements IStudentsRepository {
   private mockStudents: Array<Student> = [];
 
-  public async createStudent(student: Student): Promise<void> {
-    this.mockStudents.push(student);
+  public async createStudent(student: Student): Promise<Student> {
+    return new Promise(resolve => {
+      this.mockStudents.push(student);
+      resolve(student);
+    });
   }
 
   public async getStudents(page = 1, limit = 5, search: string): Promise<Student[]> {
@@ -21,6 +24,15 @@ class StudentsRepositoryMock implements IStudentsRepository {
       }).slice((page - 1) * limit, page * limit);
 
       resolve(returningArray);
+    });
+  }
+
+  public async getStudent(ra: string): Promise<Student> {
+    return new Promise(resolve => {
+      const data = { rows: this.mockStudents, rowCount: this.mockStudents.length } as QueryResult<Student>;
+
+      const student = data.rows.find(student => student.ra === ra);
+      resolve(student);
     });
   }
 

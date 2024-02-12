@@ -5,7 +5,15 @@ import { NextFunction, Request, Response } from "express";
 class StudentsController {
   constructor(private studentsService: StudentsService) { }
 
-  createStudent(student: Student) { };
+  async createStudent(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { ra, name, email, doc } = request.body;
+      await this.studentsService.createStudent({ ra, name, email, doc } as Student);
+      return response.status(201).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 
   async getStudents(request: Request, response: Response, next: NextFunction) {
     try {

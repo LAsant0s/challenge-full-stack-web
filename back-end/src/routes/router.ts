@@ -10,7 +10,7 @@ const studentsService = new StudentsService(studentsRepository);
 const studentsController = new StudentsController(studentsService);
 
 router.post("/students", async (req: Request, res: Response, next: NextFunction) => {
-
+  studentsController.createStudent(req, res, next);
 });
 
 router.get("/students", async (req: Request, res: Response, next: NextFunction) => {
