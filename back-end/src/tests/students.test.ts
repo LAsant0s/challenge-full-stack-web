@@ -5,6 +5,7 @@ import { PaginationRequestError } from "../errors/PaginationRequestError";
 import crypto from 'crypto';
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 import { ResourceConflictError } from "../errors/ResourceConflictError";
+import { ResourceNotFound } from "../errors/ResourceNotFound";
 
 const generate = function (): string {
   return crypto.randomBytes(10).toString('hex');
@@ -103,4 +104,52 @@ describe("Use case: register new student", () => {
 
     expect(async () => await studentsService.createStudent(student)).rejects.toThrow(new ResourceConflictError());
   });
+});
+
+describe("Use case: edit student data", () => {
+
+  afterEach(async () => {
+    for (const student of students) {
+      await studentsService.deleteStudent(student.ra);
+    }
+    students = [];
+  });
+
+
+  test("Should edit student data", async () => {
+    const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    await studentsService.createStudent(student);
+
+    const insertedStudent = await studentsService.getStudent(student.ra);
+
+    expect(insertedStudent).toEqual(student);
+
+    let updatedStudent = { ...insertedStudent, name: generate(), email: generate() };
+    updatedStudent = await studentsService.updateStudent(student.ra, updatedStudent);
+
+    const registeredStudent = await studentsService.getStudent(student.ra);
+
+    expect(registeredStudent).toEqual(updatedStudent);
+  });
+
+  test("Should not update a non-existing student", async () => {
+    const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    expect(async () => await studentsService.updateStudent(student.ra, student)).rejects.toThrow(new ResourceNotFound());
+  });
+
+  test("Should validate request required data", async () => {
+    const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    await studentsService.createStudent(student);
+
+    const insertedStudent = await studentsService.getStudent(student.ra);
+
+    const studentWithRequiredData = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    const studentWithoutEmail = { ra: student.ra, name: generate(), email: null, doc: generate(), createdAt: new Date(), updatedAt: null };
+    const studentWithoutName = { ra: student.ra, name: null, email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+
+    expect(async () => await studentsService.updateStudent(null, studentWithRequiredData)).rejects.toThrow(new InvalidRequestError());
+    expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutEmail)).rejects.toThrow(new InvalidRequestError());
+    expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutName)).rejects.toThrow(new InvalidRequestError());
+  });
+
 });

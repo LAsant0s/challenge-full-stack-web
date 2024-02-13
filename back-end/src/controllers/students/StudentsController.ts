@@ -28,9 +28,25 @@ class StudentsController {
     }
   };
 
-  getStudent(ra: number) { };
+  async getStudent(request: Request, response: Response, next: NextFunction) {
+    try {
+      const student = await this.studentsService.getStudent(request.params.ra);
+      return response.status(200).json(student);
+    } catch (error) {
+      next(error);
+    }
+  };
 
-  updateStudent(ra: number) { };
+  async updateStudent(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { ra } = request.params;
+      const { name, email } = request.body;
+      await this.studentsService.updateStudent(ra, { name, email } as Student);
+      return response.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 
   deleteStudent(ra: number) { };
 }

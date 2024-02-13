@@ -51,6 +51,17 @@ class StudentsRepository implements IStudentsRepository {
 
     return data.rows[0] as Student;
   }
+
+  public async updateStudent(ra: string, student: Student): Promise<Student> {
+    const { name, email } = student;
+
+    const data = await this.connection.query(
+      "UPDATE SM.STUDENTS SET NAME = $1, EMAIL = $2 WHERE RA = $3 RETURNING *",
+      [name, email, ra]
+    );
+
+    return data.rows[0] as Student;
+  }
 }
 
 export { StudentsRepository }

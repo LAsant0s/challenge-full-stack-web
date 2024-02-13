@@ -55,6 +55,18 @@ class StudentsRepositoryMock implements IStudentsRepository {
       resolve();
     });
   }
+
+  public updateStudent(ra: string, student: Student): Promise<Student> {
+    const { name: newName, email: newEmail } = student;
+
+    return new Promise(resolve => {
+      const studentIndex = this.mockStudents.findIndex(student => student.ra === ra);
+      this.mockStudents[studentIndex].name = newName;
+      this.mockStudents[studentIndex].email = newEmail;
+      this.mockStudents[studentIndex].updatedAt = new Date();
+      resolve(this.mockStudents[studentIndex]);
+    });
+  }
 }
 
 export { StudentsRepositoryMock }

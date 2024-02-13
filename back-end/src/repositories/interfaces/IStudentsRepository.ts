@@ -9,6 +9,8 @@ interface IStudentsRepository {
 
   deleteStudent(ra: string): Promise<void>;
 
+  updateStudent(ra: string, student: Student): Promise<Student>;
+
   createStudent(student: Student): Promise<Student>;
 }
 

@@ -17,10 +17,12 @@ router.get("/students", async (req: Request, res: Response, next: NextFunction) 
   studentsController.getStudents(req, res, next);
 });
 
-router.get("/students/:ra", async (req: Request, res: Response) => {
+router.get("/students/:ra", async (req: Request, res: Response, next: NextFunction) => {
+  studentsController.getStudent(req, res, next);
 });
 
-router.put("/students/:ra", async (req: Request, res: Response) => {
+router.put("/students/:ra", async (req: Request, res: Response, next: NextFunction) => {
+  studentsController.updateStudent(req, res, next);
 });
 
 router.delete("/students/:ra", async (req: Request, res: Response) => {
