@@ -14,60 +14,58 @@ const studentsRepositoryMock = new StudentsRepositoryMock();
 const studentsService = new StudentsService(studentsRepositoryMock);
 let students: Student[] = [];
 
-describe(
-  "Use case: list registered students", () => {
-    afterEach(async () => {
-      for (const student of students) {
-        await studentsService.deleteStudent(student.ra);
-      }
-      students = [];
-    });
+describe("Use case: list registered students", () => {
+  afterEach(async () => {
+    for (const student of students) {
+      await studentsService.deleteStudent(student.ra);
+    }
+    students = [];
+  });
 
-    test("Should get all Students", async () => {
-      students.push(
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null }
-      );
+  test("Should get all Students", async () => {
+    students.push(
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null }
+    );
 
-      for (const student of students) {
-        await studentsService.createStudent(student);
-      }
+    for (const student of students) {
+      await studentsService.createStudent(student);
+    }
 
-      const { totalStudents, students: paginatedStudents } = await studentsService.getStudents(1, 5, "");
+    const { totalStudents, students: paginatedStudents } = await studentsService.getStudents(1, 5, "");
 
-      expect(totalStudents).toBe(3);
-      expect(paginatedStudents.length).toBe(3);
-    });
+    expect(totalStudents).toBe(3);
+    expect(paginatedStudents.length).toBe(3);
+  });
 
-    test("Should get page 3 of students with 2 students per page", async () => {
-      students.push(
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
-        { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null }
-      );
+  test("Should get page 3 of students with 2 students per page", async () => {
+    students.push(
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null },
+      { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null }
+    );
 
-      for (const student of students) {
-        await studentsService.createStudent(student);
-      }
+    for (const student of students) {
+      await studentsService.createStudent(student);
+    }
 
-      const { students: pagenatedStudents, totalStudents } = await studentsService.getStudents(3, 2, "");
+    const { students: pagenatedStudents, totalStudents } = await studentsService.getStudents(3, 2, "");
 
-      expect(totalStudents).toBe(6);
-      expect(pagenatedStudents.length).toBe(2);
-      expect(pagenatedStudents[0].ra).toBe(students[4].ra);
-      expect(pagenatedStudents[1].ra).toBe(students[5].ra);
-    });
+    expect(totalStudents).toBe(6);
+    expect(pagenatedStudents.length).toBe(2);
+    expect(pagenatedStudents[0].ra).toBe(students[4].ra);
+    expect(pagenatedStudents[1].ra).toBe(students[5].ra);
+  });
 
-    test("Should validate paging parameters", async () => {
-      expect(async () => await studentsService.getStudents(-1, 5, "")).rejects.toThrow(new PaginationRequestError());
-      expect(async () => await studentsService.getStudents(1, -5, "")).rejects.toThrow(new PaginationRequestError());
-    });
-  }
-);
+  test("Should validate paging parameters", async () => {
+    expect(async () => await studentsService.getStudents(-1, 5, "")).rejects.toThrow(new PaginationRequestError());
+    expect(async () => await studentsService.getStudents(1, -5, "")).rejects.toThrow(new PaginationRequestError());
+  });
+});
 
 describe("Use case: register new student", () => {
   test("Should register a new student", async () => {
@@ -134,5 +132,26 @@ describe("Use case: edit student data", () => {
     expect(async () => await studentsService.updateStudent(null, studentWithRequiredData)).rejects.toThrow(new InvalidRequestError());
     expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutEmail)).rejects.toThrow(new InvalidRequestError());
     expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutName)).rejects.toThrow(new InvalidRequestError());
+  });
+});
+
+describe("Use case: remove student from database", () => {
+  test("Should remove a student from database", async () => {
+    const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    await studentsService.createStudent(student);
+
+    await studentsService.deleteStudent(student.ra);
+    const insertedStudent = await studentsService.getStudent(student.ra);
+
+    expect(insertedStudent).toEqual({} as Student);
+  });
+
+  test("Should not remove a non-existing student", async () => {
+    const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
+    expect(async () => await studentsService.deleteStudent(student.ra)).rejects.toThrow(new ResourceNotFound());
+  });
+
+  test("Should validate request required data", async () => {
+    expect(async () => await studentsService.deleteStudent(null)).rejects.toThrow(new InvalidRequestError());
   });
 });

@@ -39,7 +39,12 @@ class StudentsRepository implements IStudentsRepository {
     return data.rows[0] as Student;
   }
 
-  public async deleteStudent(ra: string): Promise<void> { }
+  public async deleteStudent(ra: string): Promise<void> {
+    await this.connection.query(
+      "DELETE FROM SM.STUDENTS WHERE RA = $1",
+      [ra]
+    );
+  }
 
   public async createStudent(student: Student): Promise<Student> {
     const { ra, name, email, doc } = student;

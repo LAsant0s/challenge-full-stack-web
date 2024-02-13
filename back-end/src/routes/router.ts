@@ -25,7 +25,8 @@ router.put("/students/:ra", async (req: Request, res: Response, next: NextFuncti
   studentsController.updateStudent(req, res, next);
 });
 
-router.delete("/students/:ra", async (req: Request, res: Response) => {
+router.delete("/students/:ra", async (req: Request, res: Response, next: NextFunction) => {
+  studentsController.deleteStudent(req, res, next);
 });
 
 export { router }

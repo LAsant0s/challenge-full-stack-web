@@ -48,6 +48,11 @@ class StudentsService {
   }
 
   public async deleteStudent(ra: string) {
+    if (!ra) throw new InvalidRequestError();
+
+    const studentExists = await this.studentsRepository.getStudent(ra);
+    if (!studentExists) throw new ResourceNotFound();
+
     return this.studentsRepository.deleteStudent(ra);
   }
 }

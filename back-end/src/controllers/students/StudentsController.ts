@@ -48,7 +48,14 @@ class StudentsController {
     }
   };
 
-  deleteStudent(ra: number) { };
+  async deleteStudent(request: Request, response: Response, next: NextFunction) {
+    try {
+      await this.studentsService.deleteStudent(request.params.ra);
+      return response.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export { StudentsController };
