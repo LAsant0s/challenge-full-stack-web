@@ -70,13 +70,6 @@ describe(
 );
 
 describe("Use case: register new student", () => {
-  afterEach(async () => {
-    for (const student of students) {
-      await studentsService.deleteStudent(student.ra);
-    }
-    students = [];
-  });
-
   test("Should register a new student", async () => {
     const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
     await studentsService.createStudent(student);
@@ -107,15 +100,6 @@ describe("Use case: register new student", () => {
 });
 
 describe("Use case: edit student data", () => {
-
-  afterEach(async () => {
-    for (const student of students) {
-      await studentsService.deleteStudent(student.ra);
-    }
-    students = [];
-  });
-
-
   test("Should edit student data", async () => {
     const student = { ra: generate(), name: generate(), email: generate(), doc: generate(), createdAt: new Date(), updatedAt: null };
     await studentsService.createStudent(student);
@@ -151,5 +135,4 @@ describe("Use case: edit student data", () => {
     expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutEmail)).rejects.toThrow(new InvalidRequestError());
     expect(async () => await studentsService.updateStudent(insertedStudent.ra, studentWithoutName)).rejects.toThrow(new InvalidRequestError());
   });
-
 });
