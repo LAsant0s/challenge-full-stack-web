@@ -1,16 +1,20 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark> </v-app-bar>
-
-    <v-main> </v-main>
+    <navigation-menu>
+      <router-view />
+    </navigation-menu>
   </v-app>
 </template>
 
 <script>
+import NavigationMenu from "@/components/NavigationMenu";
+
 export default {
   name: "App",
 
-  components: {},
+  components: {
+    NavigationMenu,
+  },
 
   data: () => ({}),
 };
