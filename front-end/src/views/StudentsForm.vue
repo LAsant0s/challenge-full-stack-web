@@ -37,7 +37,9 @@
                 </v-col>
               </v-row>
               <v-card-actions>
-                <v-btn type="submit" color="primary">Salvar</v-btn>
+                <v-btn type="submit" :loading="sendingData" color="primary"
+                  >Salvar</v-btn
+                >
                 <v-btn color="red darken-4" to="/students">Cancelar</v-btn>
               </v-card-actions>
             </v-form>
@@ -49,9 +51,12 @@
 </template>
 
 <script>
+import { eventBus } from "@/utils/eventBus";
+
 export default {
   data() {
     return {
+      sendingData: false,
       student: {
         ra: "",
         name: "",
@@ -62,13 +67,17 @@ export default {
   },
 
   methods: {
-    submitStudentForm() {
+    async submitStudentForm() {
       try {
-        this.$api.post("students", this.student);
-
+        this.sendingData = true;
+        await this.$api.post("students", this.student);
+        eventBus.$emit("success", "Estudante cadastrado com sucesso");
+        this.sendingData = false;
         this.$router.push("/students");
       } catch (error) {
-        console.error(error);
+        console.log(error);
+        eventBus.$emit("error", "Ocorreu um erro ao cadastrar o estudante");
+        this.sendingData = false;
       }
     },
   },
