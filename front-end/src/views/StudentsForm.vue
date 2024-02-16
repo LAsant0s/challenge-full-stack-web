@@ -3,7 +3,20 @@
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title>Cadastrar estudante</v-card-title>
+          <v-card-title>
+            {{ studentRa ? "Editar estudante" : "Cadastrar estudante" }}
+          </v-card-title>
+
+          <div
+            v-if="searchingStudent"
+            class="loading-spinner-wrapper flex-grow-1 d-flex align-center justify-center"
+          >
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              class="loading-spinner"
+            />
+          </div>
 
           <v-card-text>
             <v-form ref="form" @submit.prevent="submitStudentForm">
@@ -14,6 +27,7 @@
                     v-mask="'########'"
                     label="Registro Acadêmico"
                     :rules="[validateEmptyField]"
+                    :disabled="!!studentRa"
                   />
                 </v-col>
 
@@ -31,6 +45,7 @@
                     label="CPF"
                     v-mask="'###.###.###-##'"
                     :rules="[validateEmptyField, validateCpfField]"
+                    :disabled="!!studentRa"
                   />
                 </v-col>
 
@@ -44,7 +59,7 @@
               </v-row>
 
               <v-card-actions>
-                <v-btn type="submit" :loading="sendingData" color="primary">
+                <v-btn type="submit" :loading="submittingData" color="primary">
                   Salvar
                 </v-btn>
 
@@ -72,7 +87,9 @@ import { validateCPF, validateEmail } from "@/utils/validations";
 export default {
   data() {
     return {
-      sendingData: false,
+      studentRa: null,
+      searchingStudent: false,
+      submittingData: false,
       student: {
         ra: "",
         name: "",
@@ -84,6 +101,16 @@ export default {
 
   directives: {
     directives: { mask },
+  },
+
+  created() {
+    const { ra } = this.$route.params;
+    this.studentRa = ra ? ra : null;
+
+    if (ra) {
+      this.searchingStudent = true;
+      this.getStudent(ra);
+    }
   },
 
   methods: {
@@ -99,6 +126,18 @@ export default {
       return !!value || "Campo obrigatório";
     },
 
+    async getStudent(ra) {
+      try {
+        const { data } = await this.$api.get(`students/${ra}`);
+        this.student = data;
+        this.searchingStudent = false;
+      } catch (error) {
+        eventBus.$emit("error", "Ocorreu um erro ao buscar o estudante");
+        this.searchingStudent = false;
+        this.$router.push("/students");
+      }
+    },
+
     async submitStudentForm() {
       const isFormValid = this.$refs.form.validate();
       if (!isFormValid) {
@@ -106,19 +145,32 @@ export default {
         return;
       }
 
-      this.sendingData = true;
+      this.submittingData = true;
+
       try {
-        await this.$api.post("students", this.student);
-        eventBus.$emit("success", "Estudante cadastrado com sucesso");
-        this.sendingData = false;
+        if (!this.studentRa) {
+          await this.$api.post("students", this.student);
+          eventBus.$emit("success", "Estudante cadastrado com sucesso");
+        } else {
+          await this.$api.put(`students/${this.studentRa}`, {
+            name: this.student.name,
+            email: this.student.email,
+          });
+          eventBus.$emit("success", "Estudante atualizado com sucesso");
+        }
+
+        this.submittingData = false;
         this.$router.push("/students");
       } catch (error) {
         if (error.response.status === 409) {
-          eventBus.$emit("warning", "RA informado já cadastrado no sistema");
+          eventBus.$emit(
+            "warning",
+            "Registro Acadêmico informado já cadastrado no sistema"
+          );
         } else {
           eventBus.$emit("error", "Ocorreu um erro ao cadastrar o estudante");
         }
-        this.sendingData = false;
+        this.submittingData = false;
       }
     },
   },

@@ -49,7 +49,12 @@
         <template v-slot:[`item.actions`]="student">
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon v-bind="attrs" v-on="on">
+              <v-btn
+                icon
+                v-bind="attrs"
+                v-on="on"
+                @click="() => editStudent(student)"
+              >
                 <v-icon small>mdi-pencil</v-icon>
               </v-btn>
             </template>
@@ -164,6 +169,13 @@ export default {
         this.getStudents();
       } catch (error) {
         eventBus.$emit("error", "Ocorreu um erro ao deletar o estudante");
+      }
+    },
+
+    editStudent(student) {
+      const academicRecord = student.item.ra;
+      if (academicRecord) {
+        this.$router.push({ path: `edit/${academicRecord}`, append: true });
       }
     },
 
