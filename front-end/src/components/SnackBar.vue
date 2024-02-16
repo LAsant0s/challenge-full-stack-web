@@ -40,6 +40,10 @@ export default {
     eventBus.$on("error", (message) => {
       this.activateSnackBar("error", message);
     });
+
+    eventBus.$on("warning", (message) => {
+      this.activateSnackBar("warning", message);
+    });
   },
 
   destroyed() {

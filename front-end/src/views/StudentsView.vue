@@ -41,13 +41,18 @@
         loading-text="Buscando alunos"
         no-data-text="Não há dados para ser exibidos"
         class="elevation-1"
-      />
+      >
+        <template v-slot:[`item.doc`]="{ value }">
+          {{ formatCPF(value) }}
+        </template>
+      </v-data-table>
     </v-card>
   </div>
 </template>
 
 <script>
 import { eventBus } from "@/utils/eventBus";
+import { formatCPF } from "@/utils/format";
 
 export default {
   data() {
@@ -85,6 +90,8 @@ export default {
     },
   },
   methods: {
+    formatCPF,
+
     clearFilterAndSearch() {
       this.searchTerm = "";
       this.getStudents();
