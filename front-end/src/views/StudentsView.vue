@@ -45,8 +45,56 @@
         <template v-slot:[`item.doc`]="{ value }">
           {{ formatCPF(value) }}
         </template>
+
+        <template v-slot:[`item.actions`]="student">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-bind="attrs" v-on="on">
+                <v-icon small>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+
+            <span>Editar estudante</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                icon
+                v-bind="attrs"
+                v-on="on"
+                @click="() => openDialogConfirmDelete(student)"
+              >
+                <v-icon small>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+
+            <span>Excluir estudante</span>
+          </v-tooltip>
+        </template>
       </v-data-table>
     </v-card>
+
+    <v-dialog v-model="dialogDeleteOpen" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Deseja deletar este aluno?</v-card-title>
+        <v-card-text>Cuidado, esta ação é irreversível</v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+
+          <v-btn color="blue darken-1" text @click="closeDialogDelete">
+            Cancel
+          </v-btn>
+
+          <v-btn color="red darken-4" text @click="deleteStudent">
+            Deletar
+          </v-btn>
+
+          <v-spacer />
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -57,7 +105,9 @@ import { formatCPF } from "@/utils/format";
 export default {
   data() {
     return {
+      dialogDeleteOpen: false,
       totalStudents: 0,
+      selectedStudentRa: "",
       students: [],
       loading: true,
       options: {},
@@ -90,11 +140,31 @@ export default {
     },
   },
   methods: {
-    formatCPF,
+    closeDialogDelete() {
+      this.dialogDeleteOpen = false;
+    },
+
+    openDialogConfirmDelete(student) {
+      this.dialogDeleteOpen = true;
+      this.selectedStudentRa = student.item.ra;
+    },
 
     clearFilterAndSearch() {
       this.searchTerm = "";
       this.getStudents();
+    },
+
+    formatCPF,
+
+    async deleteStudent() {
+      try {
+        await this.$api.delete(`/students/${this.selectedStudentRa}`);
+        this.dialogDeleteOpen = false;
+        eventBus.$emit("success", "Estudante deletado com sucesso");
+        this.getStudents();
+      } catch (error) {
+        eventBus.$emit("error", "Ocorreu um erro ao deletar o estudante");
+      }
     },
 
     async getStudents() {

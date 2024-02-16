@@ -48,9 +48,13 @@
                   Salvar
                 </v-btn>
 
-                <v-btn color="red darken-4" class="cancel-button" to="/students"
-                  >Cancelar</v-btn
+                <v-btn
+                  color="red darken-4"
+                  class="cancel-button"
+                  to="/students"
                 >
+                  Cancelar
+                </v-btn>
               </v-card-actions>
             </v-form>
           </v-card-text>
@@ -84,7 +88,6 @@ export default {
 
   methods: {
     validateCpfField(cpf) {
-      console.log(cpf);
       return validateCPF(cpf) || "CPF inválido";
     },
 
